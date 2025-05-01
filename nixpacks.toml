@@ -1,5 +1,5 @@
-[phases]
-setup = ["python-3.10", "nodejs-18"]
+[phases.setup]
+pkgs = ["python-3.10", "nodejs-18"]
 
 [build]
 install = [
