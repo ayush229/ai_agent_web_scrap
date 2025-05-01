@@ -9,4 +9,4 @@ install = [
 build = "cd frontend && npm run build"
 
 [start]
-cmd = "cd backend && /opt/nixpacks/store/*/bin/python -m gunicorn backend.main:app --bind 0.0.0.0:$PORT --timeout 600"
+cmd = "cd backend && PYTHON_EXECUTABLE=$(which python3) && $PYTHON_EXECUTABLE -m gunicorn backend.main:app --bind 0.0.0.0:$PORT --timeout 600"
