@@ -1,8 +1,5 @@
 [phases]
-setup = [
-    "python-3.10",
-    "nodejs-18"
-]
+setup = ["python-3.10", "nodejs-18"]
 
 [build]
 install = [
@@ -12,4 +9,4 @@ install = [
 build = "cd frontend && npm run build"
 
 [start]
-cmd = "gunicorn backend.main:app --bind 0.0.0.0:$PORT --timeout 600 --workers 4"
+cmd = "gunicorn backend.main:app --bind 0.0.0.0:$PORT --timeout 600"
