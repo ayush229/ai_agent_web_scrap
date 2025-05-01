@@ -1,93 +1,65 @@
-import React, { useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import axios from "axios";
+import React, { useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography, CircularProgress } from '@mui/material';
+import axios from 'axios';
 
-const AgentQuery = ({ open, handleClose, agentId }) => {
-  const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
-  const handleSubmit = async () => {
-    if (!query.trim()) return;
+function AgentQuery({ open, handleClose, agentId }) {
+    const [query, setQuery] = useState('');
+    const [response, setResponse] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    setLoading(true);
-    try {
-      const result = await axios.post(
-        "/ask_stored",
-        {
-          unique_code: agentId,
-          user_query: query,
-        },
-        {
-          auth: {
-            username: localStorage.getItem("username"),
-            password: localStorage.getItem("password"),
-          },
+    const handleSubmit = async () => {
+        if (!query.trim()) return;
+        setLoading(true);
+        setResponse('');
+        try {
+            const res = await axios.post(
+                `${API_BASE_URL}/ask_stored`,
+                { unique_code: agentId, query: query },
+                {
+                    headers: {
+                        'Authorization': `Basic ${btoa(`${localStorage.getItem('username')}:${localStorage.getItem('password')}`)}`,
+                    },
+                }
+            );
+            setResponse(res.data.reply);
+        } catch (error) {
+            console.error('Error querying agent:', error);
+            setResponse('Error processing your query.');
+        } finally {
+            setLoading(false);
         }
-      );
-      setResponse(result.data.ai_response);
-    } catch (error) {
-      console.error("Error querying agent:", error);
-      setResponse("Error: Failed to get response from agent");
-    }
-    setLoading(false);
-  };
+    };
 
-  return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Test Agent</DialogTitle>
-      <DialogContent dividers>
-        <TextField
-          label="Enter your query"
-          fullWidth
-          multiline
-          rows={3}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          margin="normal"
-        />
-        <Box mt={2}>
-          <Typography variant="h6">Agent Response:</Typography>
-          <Box
-            sx={{
-              p: 2,
-              border: "1px solid #ddd",
-              borderRadius: 1,
-              minHeight: "100px",
-              bgcolor: "#f9f9f9",
-            }}
-          >
-            {loading ? (
-              <CircularProgress size={24} />
-            ) : (
-              <Typography>
-                {response || "Response will appear here..."}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Close</Button>
-        <Button
-          onClick={handleSubmit}
-          color="primary"
-          variant="contained"
-          disabled={loading || !query.trim()}
-        >
-          Submit Query
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
+    return (
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+            <DialogTitle>Test Agent</DialogTitle>
+            <DialogContent>
+                <TextField
+                    label="Your Query"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    margin="normal"
+                />
+                <Box mt={2}>
+                    <Typography variant="h6">Response:</Typography>
+                    <Box sx={{ border: '1px solid #ccc', p: 2, mt: 1, borderRadius: 1, minHeight: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {loading ? <CircularProgress /> : (response ? <pre>{response}</pre> : <Typography color="textSecondary">No response yet.</Typography>)}
+                    </Box>
+                </Box>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleClose}>Close</Button>
+                <Button onClick={handleSubmit} disabled={loading || !query.trim()}>
+                    {loading ? 'Submitting...' : 'Submit Query'}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
 
 export default AgentQuery;
